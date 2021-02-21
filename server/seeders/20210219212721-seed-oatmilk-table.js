@@ -11,12 +11,6 @@ module.exports = {
 			"locations",
 			[
 				{
-					zip_code: 93010,
-					area_name: "Camarillo",
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				},
-				{
 					zip_code: 91202,
 					area_name: "Glendale",
 					createdAt: new Date(),
