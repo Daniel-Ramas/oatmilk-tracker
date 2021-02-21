@@ -8,6 +8,8 @@ app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 5000;
 
+//this app is simple enough to not require routers
+
 //endpoint to serve quasar spa
 app.get("/", (req, res) => {
 	res.send("Endpoint to serve quasar application");

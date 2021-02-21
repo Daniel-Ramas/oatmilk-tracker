@@ -2,6 +2,8 @@
 
 const { uuid } = require("uuidv4");
 var faker = require("faker");
+const scrapers = require("../scrapers");
+const { URL_INSTACART, URL_TARGET, URL_WHOLEFOODS, ZIP } = require("../urls");
 
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
@@ -32,108 +34,55 @@ module.exports = {
 
 		const locationRows = locations[0];
 
-		await queryInterface.bulkInsert(
-			"oatmilks",
-			[
-				{
-					locationId: locationRows[0].id,
-					uuid: uuid(),
-					name: "Oatly",
-					price: faker.commerce.price(),
-					store: "Target",
-					image_src: faker.image.image(),
-					address: faker.address.streetAddress(),
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				},
-				{
-					locationId: locationRows[0].id,
-					uuid: uuid(),
-					name: "Oatly",
-					price: faker.commerce.price(),
-					store: "Ralphs",
-					image_src: faker.image.image(),
-					address: faker.address.streetAddress(),
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				},
-				{
-					locationId: locationRows[0].id,
-					uuid: uuid(),
-					name: "Oatly",
-					price: faker.commerce.price(),
-					store: "Sprouts",
-					image_src: faker.image.image(),
-					address: faker.address.streetAddress(),
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				},
-				{
-					locationId: locationRows[0].id,
-					uuid: uuid(),
-					name: "Oatly",
-					price: faker.commerce.price(),
-					store: "Whole Foods",
-					image_src: faker.image.image(),
-					address: faker.address.streetAddress(),
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				},
-				{
-					locationId: locationRows[1].id,
-					uuid: uuid(),
-					name: "Oatly",
-					price: faker.commerce.price(),
-					store: "Target",
-					image_src: faker.image.image(),
-					address: faker.address.streetAddress(),
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				},
-				{
-					locationId: locationRows[1].id,
-					uuid: uuid(),
-					name: "Oatly",
-					price: faker.commerce.price(),
-					store: "Ralphs",
-					image_src: faker.image.image(),
-					address: faker.address.streetAddress(),
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				},
-				{
-					locationId: locationRows[1].id,
-					uuid: uuid(),
-					name: "Oatly",
-					price: faker.commerce.price(),
-					store: "Smart & Final",
-					image_src: faker.image.image(),
-					address: faker.address.streetAddress(),
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				},
-				{
-					locationId: locationRows[1].id,
-					uuid: uuid(),
-					name: "Oatly",
-					price: faker.commerce.price(),
-					store: "Whole Foods",
-					image_src: faker.image.image(),
-					address: faker.address.streetAddress(),
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				},
-			],
-			{}
-		);
+		//scrape and initialize the seed data
+		var instacartData = await scrapers.scrapeInstacart(URL_INSTACART, ZIP);
+
+		var targetData = await scrapers.scrapeTarget(URL_TARGET, ZIP);
+
+		var wholefoodsData = await scrapers.scrapeWholeFoods(URL_WHOLEFOODS, ZIP);
+
+		await queryInterface.bulkInsert("oatmilks", [
+			{
+				//instacart data
+				uuid: uuid(),
+				locationId: locationRows[0].id,
+				name: instacartData.name,
+				price: instacartData.price,
+				store: instacartData.store,
+				image_src: faker.image.imageUrl(),
+				address: instacartData.address,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			},
+			{
+				//target data
+				uuid: uuid(),
+				locationId: locationRows[0].id,
+				name: targetData.name,
+				price: targetData.price,
+				store: targetData.store,
+				image_src: faker.image.imageUrl(),
+				address: targetData.address,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			},
+			{
+				//whole foods data
+				uuid: uuid(),
+				locationId: locationRows[0].id,
+				name: wholefoodsData.name,
+				price: wholefoodsData.price,
+				store: wholefoodsData.store,
+				image_src: faker.image.imageUrl(),
+				address: wholefoodsData.address,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			},
+		]);
 	},
 
 	down: async (queryInterface, Sequelize) => {
-		/**
-		 * Add commands to revert seed here.
-		 *
-		 * Example:
-		 * await queryInterface.bulkDelete('People', null, {});
-		 */
+		await queryInterface.bulkDelete("oatmilks", null, {});
+		await queryInterface.bulkDelete("locations", null, {});
 	},
 };
