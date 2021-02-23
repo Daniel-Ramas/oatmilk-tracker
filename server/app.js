@@ -5,11 +5,14 @@ const scrapers = require("./scrapers");
 const { URL_INSTACART, URL_TARGET, URL_WHOLEFOODS } = require("./urls");
 const { uuid } = require("uuidv4");
 var faker = require("faker");
+const cors = require("cors");
 const app = express();
-app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 5000;
 
+app.use(express.static("public"));
+app.use(bodyParser.json());
+app.use(cors());
 //this app is simple enough to not require routers
 
 //endpoint to serve quasar spa
@@ -90,6 +93,15 @@ app.patch("/api/oatmilks/:uuid", async (req, res) => {
 //endpoint for adding a new zipcode which will use the scrapers to obtain the oatmilk data
 app.post("/api/locations", async (req, res) => {
 	const { zip_code, area_name } = req.body;
+
+	//check if it exits to not make double entries
+	const zipInDb = await Location.findOne({ where: { zip_code } });
+	if (zipInDb !== null) {
+		return res.status(200).json({
+			msg: "Hey the zipcode is already in the db",
+		});
+	}
+
 	try {
 		//create location
 		await Location.create({
@@ -106,18 +118,17 @@ app.post("/api/locations", async (req, res) => {
 		var instacartData = await scrapers.scrapeInstacart(URL_INSTACART, zip_code);
 		instacartData.uuid = uuid();
 		instacartData.locationId = location.id;
-		instacartData.image_src = faker.image.imageUrl();
+
 		var targetData = await scrapers.scrapeTarget(URL_TARGET, zip_code);
 		targetData.uuid = uuid();
 		targetData.locationId = location.id;
-		targetData.image_src = faker.image.imageUrl();
+
 		var wholefoodsData = await scrapers.scrapeWholeFoods(
 			URL_WHOLEFOODS,
 			zip_code
 		);
 		wholefoodsData.uuid = uuid();
 		wholefoodsData.locationId = location.id;
-		wholefoodsData.image_src = faker.image.imageUrl();
 
 		//create table entries
 		await Oatmilk.create(instacartData);

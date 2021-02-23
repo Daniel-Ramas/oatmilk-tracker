@@ -1,3 +1,4 @@
+const e = require("express");
 const faker = require("faker");
 const puppeteer = require("puppeteer");
 
@@ -26,6 +27,20 @@ const scrapeInstacart = async (url, zip) => {
 	await page.goto(url, {
 		waitUntil: "networkidle2",
 	});
+
+	//get src of img
+	var image_src;
+	try {
+		image_src = await page.$eval(
+			"#main-content > div.rmq-55d4a504 > div > div.rmq-dff875f > picture > img",
+			(el) => {
+				return el.src;
+			}
+		);
+	} catch (error) {
+		console.log(error);
+		image_src = "/public/oatly-default-img.jpeg";
+	}
 
 	//wait for update link to render & for zip input field to open
 
@@ -83,6 +98,7 @@ const scrapeInstacart = async (url, zip) => {
 		price,
 		store,
 		address: zip,
+		image_src,
 	};
 };
 
@@ -99,6 +115,24 @@ const scrapeTarget = async (url, zip) => {
 		waitUntil: "networkidle2",
 	});
 
+	//wait for image to render
+	await page.waitForSelector(
+		"#viewport > div:nth-child(4) > div > div.Row-uds8za-0.fdXLni > div.Col-favj32-0.hKWLcP > div > div > div > div.Col-favj32-0.gUxEJK.carouselMainImageWrapper > div > div > div > div > div > div:nth-child(3) > a > div > div > div > div > div > img"
+	);
+
+	var image_src;
+	try {
+		image_src = await page.$eval(
+			"#viewport > div:nth-child(4) > div > div.Row-uds8za-0.fdXLni > div.Col-favj32-0.hKWLcP > div > div > div > div.Col-favj32-0.gUxEJK.carouselMainImageWrapper > div > div > div > div > div > div:nth-child(3) > a > div > div > div > div > div > img",
+			(el) => {
+				return el.src;
+			}
+		);
+	} catch (error) {
+		console.log(error);
+		image_src = "/public/oatly-default-img.jpeg";
+	}
+
 	//get price
 	const price = await page.$eval(
 		"#viewport > div:nth-child(4) > div > div.Row-uds8za-0.fdXLni > div.Col-favj32-0.styles__StyledCol-sc-1n8m629-5.MkLC.dbdzSB.h-padding-h-default.h-padding-t-tight > div.h-padding-b-default > div:nth-child(1) > div.style__PriceFontSize-sc-17wlxvr-0.ceEMdT",
@@ -107,8 +141,6 @@ const scrapeTarget = async (url, zip) => {
 		}
 	);
 
-	//get img url
-	const image = faker.random.image();
 	//console.log({ price, brand, image });
 
 	await browser.close();
@@ -118,6 +150,7 @@ const scrapeTarget = async (url, zip) => {
 		name: "Oatly",
 		price,
 		address: zip,
+		image_src,
 	};
 };
 
@@ -127,6 +160,25 @@ const scrapeWholeFoods = async (url, zip) => {
 	await page.goto(url, {
 		waitUntil: "networkidle2",
 	});
+
+	//wait for image to render on DOM
+	await page.waitForSelector(
+		"#main-content > div > div.w-pie--pdp-image > div > div.w-pie--product-detail-carousel > div.w-pie--pdc__small > div > div > div > div.slick-slide.slick-active.slick-current > div > div > img"
+	);
+
+	//get img
+	var image_src;
+	try {
+		image_src = await page.$eval(
+			"#main-content > div > div.w-pie--pdp-image > div > div.w-pie--product-detail-carousel > div.w-pie--pdc__small > div > div > div > div.slick-slide.slick-active.slick-current > div > div > img",
+			(el) => {
+				return el.src;
+			}
+		);
+	} catch (error) {
+		console.log(error);
+		image_src = "/public/oat-default-img.src";
+	}
 
 	//get reference to zipcode input field
 	const inputZipField = await page.$("#pie-pdp-storefinder");
@@ -144,7 +196,7 @@ const scrapeWholeFoods = async (url, zip) => {
 	const address = await page.$eval(
 		"#main-content > div > div.w-pie--pdp-description > section.w-pie--pdp__storefinder > section > div > wfm-search-bar > div.wfm-search-bar--list_container > div > ul > li:nth-child(1) > span",
 		(el) => {
-			return el.innerHTML;
+			return el.textContent;
 		}
 	);
 
@@ -174,6 +226,7 @@ const scrapeWholeFoods = async (url, zip) => {
 		name,
 		address,
 		price,
+		image_src,
 	};
 };
 
