@@ -11,6 +11,8 @@ module.exports = (sequelize, DataTypes) => {
 			// define association here
 			//one location has many oatmilks associated (one to many)
 			this.hasMany(Oatmilk, {
+				onDelete: "CASCADE",
+				hooks: true,
 				foreignKey: "locationId",
 				as: "oatmilks",
 			});

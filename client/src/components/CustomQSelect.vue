@@ -1,29 +1,29 @@
 <template>
-  <q-select v-model="model" :options="options"></q-select>
+  <q-select dense outlined v-model="model" :options="options"></q-select>
 </template>
 
 <script>
-import axios from 'axios'
 export default {
   data() {
-    return {
-      model: 91202,
-      options: []
+    return {}
+  },
+  computed: {
+    model: {
+      get() {
+        return this.zip
+      },
+      set(newVal, oldVal) {
+        if (newVal !== oldVal) this.$emit('zip-code-changed', newVal)
+      }
+    },
+    options: {
+      get() {
+        return this.zips
+      }
     }
   },
-  watch: {
-    model(newVal, oldVal) {
-      if (newVal !== oldVal) this.$emit('zip-code-changed', newVal)
-    }
-  },
-  mounted() {
-    axios
-      .get('http://localhost:5000/api/locations')
-      .then(res => {
-        this.options = res.data.map(zip => zip.zip_code)
-      })
-      .catch(err => console.log(err))
-  }
+  watch: {},
+  props: ['zip', 'zips']
 }
 </script>
 

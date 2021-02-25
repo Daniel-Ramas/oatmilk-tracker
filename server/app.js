@@ -148,6 +148,20 @@ app.post("/api/locations", async (req, res) => {
 	}
 });
 
+// Delete a location
+app.delete("/api/locations/:zip", async (req, res) => {
+	const zip = req.params.zip;
+
+	try {
+		const location = await Location.findOne({ where: { zip_code: zip } });
+		await location.destroy();
+		return res.status(200).json({ msg: "Zip code is deleted" });
+	} catch (error) {
+		console.log(error);
+		return res.status(500).json(error);
+	}
+});
+
 //endpoint for adding a price
 
 //endpoint for calling scrape method to update all info in db
@@ -165,3 +179,5 @@ app.listen(PORT, async () => {
 		console.log("Unable to authenticate to database");
 	}
 });
+
+//sequelize destroy include related model to delete
